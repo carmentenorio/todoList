@@ -1,69 +1,130 @@
 const input = document.querySelector("input");
-const addBtn = document.querySelector(".btn-add"); //añadir una tarea
-const ul = document.querySelector("ul"); //lista donde se va a gregar todos los elementos
-const empty = document.querySelector(".empty"); //mensaje de lista vacia
+const addBtn = document.querySelector(".btn-add");
+const ul = document.querySelector("ul");
+const empty = document.querySelector(".empty");
+
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+loadTask();
 
 addBtn.addEventListener("click", (e) => {
   e.preventDefault();
-  //console.log(1);
 
   const taskText = input.value;
 
   if (taskText !== "") {
-    addTask(taskText);
+    addTaskToList(taskText);
 
     input.value = "";
-    empty.style.display = "none"; //ocultar mensaje de lista vacia
+    empty.style.display = "none";
   }
 });
-
-function addTask(taskText) {
+/**
+ * Render tasks
+ * @param {} taskText
+ */
+function renderTask(taskText) {
   const li = document.createElement("li");
   const p = document.createElement("p");
+
   p.textContent = taskText;
 
+  const deleteBtn = document.createElement("button");
+  deleteBtn.textContent = "Delete";
+  deleteBtn.className = "btn-delete";
+
+  deleteBtn.addEventListener("click", () => {
+    removeTaskFromList(taskText, li);
+  });
+
+  const editBtn = document.createElement("b");
+
   li.appendChild(p);
-  li.appendChild(addDeleteBtn());
-  li.appendChild(editBtn());
-  li.appendChild(viewBtn());
+  li.appendChild(deleteBtn);
   ul.appendChild(li);
 }
 
 function addDeleteBtn() {
   const deleteBtn = document.createElement("button");
   deleteBtn.classList.add("btn-delete");
-  //crear icono
+
   const icon = document.createElement("i");
-  icon.classList.add("fa-solid", "fa-trash"); //clase del icon
+  icon.classList.add("fa-solid", "fa-trash");
   icon.style.cursor = "pointer";
   icon.style.color = "red";
-  //Insertar ícono dentro del botón
+
   deleteBtn.appendChild(icon);
-  /*
+
   deleteBtn.addEventListener("click", (e) => {
     e.preventDefault();
-    //para encontrar el li mas cercano al icono
-    const li = e.target.closest("li"); // Busca el <li> más cercano
+
+    const li = e.target.closest("li");
     ul.removeChild(li);
+
+    deletTask(taskText);
+
     const items = document.querySelectorAll("li");
     if (items.length === 0) {
       empty.style.display = "block"; //mostrar mensaje de lista vacia
     }
   });
-  deleteBtn.appendChild(icon);*/
+  deleteBtn.appendChild(icon);
   return deleteBtn;
+}
+/**
+ *
+ */
+function loadTask() {
+  ul.innerHTML = "";
+  tasks.forEach((task) => {
+    renderTask(task);
+  });
+  empty.style.display = tasks.length === 0 ? "block" : "none";
+}
+
+function deletTask(taskText) {
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks = tasks.filter((task) => task !== taskText);
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+/**
+ * Add task to array
+ * @param {*} taskText
+ */
+
+function addTaskToList(taskText) {
+  tasks.push(taskText);
+  saveTasks();
+  renderTask(taskText);
+}
+/**
+ * Delete array and DOM task
+ * @param {*} taskText
+ * @param {*} liElement
+ */
+function removeTaskFromList(taskText, liElement) {
+  tasks = tasks.filter((task) => task !== taskText);
+  saveTasks();
+  ul.removeChild(liElement);
+
+  if (tasks.length === 0) {
+    empty.style.display = "block";
+  }
+}
+/**
+ * Save to localStorage
+ */
+function saveTasks() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
 function editBtn() {
   const editBtn = document.createElement("button");
   editBtn.classList.add("btn-edit");
-  //crear icono editar
   const icon = document.createElement("i");
-  icon.classList.add("fa-solid", "fa-pen-to-square"); //clase del icon
-
-  //Insertar ícono dentro del botón
+  icon.classList.add("fa-solid", "fa-pen-to-square");
   editBtn.appendChild(icon);
-/*
+
   editBtn.addEventListener("click", (e) => {
     e.preventDefault();
     const newEditBtn = prompt("Edita la tarea:", p.textContent);
@@ -72,21 +133,18 @@ function editBtn() {
     }
   });
 
-  editBtn.appendChild(icon);*/
+  editBtn.appendChild(icon);
   return editBtn;
 }
 
 function viewBtn() {
   const viewBtn = document.createElement("button");
   viewBtn.classList.add("btn-edit");
-  //crear icono ver
   const icon = document.createElement("i");
-  icon.classList.add("fa-solid", "fa-eye"); //clase del icon
-
-  //Insertar ícono dentro del botón
+  icon.classList.add("fa-solid", "fa-eye");
   viewBtn.appendChild(icon);
-/*
-  editBtn.addEventListener("click", (e) => {
+
+  viewBtn.addEventListener("click", (e) => {
     e.preventDefault();
     const newEditBtn = prompt("Edita la tarea:", p.textContent);
     if (newEditBtn !== null && newEditBtn.trim() !== "") {
@@ -94,6 +152,6 @@ function viewBtn() {
     }
   });
 
-  editBtn.appendChild(icon);*/
+  viewBtn.appendChild(icon);
   return viewBtn;
 }
