@@ -5,24 +5,19 @@ const ul = document.querySelector("ul");
 const empty = document.querySelector(".empty");
 
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-//descriptions of tasks
-//let descriptions = JSON.parse(localStorage.getItem("descriptions")) || [];
-//array para guardar en checked
-//let completed = JSON.parse(localStorage.getItem("completed")) || [];
 /**
  * load tasks on page startup
  */
 render();
 addBtn.addEventListener("click", (e) => {
   e.preventDefault();
-  //console.log(inputDesc,inputTask);
   const taskText = inputTask.value.trim();
   const description = inputDesc.value.trim();
   if (taskText !== "" && description !== "") {
     addTaskToList(taskText, description);
     inputTask.value = "";
     inputDesc.value = "";
-    empty.style.display = "none"; //ocultar mensaje de lista vacia
+    empty.style.display = "none";
   }
 });
 /**
@@ -59,9 +54,7 @@ function render() {
     })
     .join("");
 }
-
 function toggleTask(index) {
-  //este hace que sea aleatorio el checked o no checked
   tasks[index].completed = !tasks[index].completed;
   saveTasksToStorage();
   render();
@@ -93,7 +86,6 @@ function addTaskToList(taskText, description) {
  * @param {*} i
  */
 function deleteTaskByIndex(i) {
-  //splice modified the content of array, delete element of the position
   tasks.splice(i, 1);
   saveTasksToStorage();
   render();
@@ -122,7 +114,6 @@ function viewTaskByIndex(index) {
     alert("Task: " + task.text + "\nDescription: " + task.description);
   }
 }
-
 /**
  * edit task by id
  * @param {*} id
@@ -130,18 +121,15 @@ function viewTaskByIndex(index) {
 function editTaskByIndex(index) {
   const newText = prompt("Edit task:", tasks[index].text);
   const newDesc = prompt("Edit description:", tasks[index].description);
-
   if (newText && newText.trim() !== "") {
     tasks[index].text = newText.trim();
   }
   if (newDesc && newDesc.trim() !== "") {
     tasks[index].description = newDesc.trim();
   }
-
   saveTasksToStorage();
   render();
 }
-
 /**
  * function that is no longer used since render contains it
  * @param {*} taskText
@@ -157,69 +145,4 @@ function renderTask(taskText) {
   li.appendChild(p);
   li.appendChild(deleteBtn);
   ul.appendChild(li);
-}
-/**
- * function used in function renderTask
- * @param {*} taskText
- * @returns
- */
-
-function addDeleteBtn(taskText) {
-  const deleteBtn = document.createElement("button");
-  deleteBtn.classList.add("btn-delete");
-
-  const icon = document.createElement("i");
-  icon.classList.add("fa-solid", "fa-trash"); //clase del icon
-  icon.style.cursor = "pointer";
-  icon.style.color = "red";
-
-  //Insertar ícono dentro del botón
-  deleteBtn.appendChild(icon);
-
-  deleteBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    deleteTask(taskText);
-    render();
-  });
-  deleteBtn.appendChild(icon);
-  return deleteBtn;
-}
-
-function editBtn() {
-  const editBtn = document.createElement("button");
-  editBtn.classList.add("btn-edit");
-  const icon = document.createElement("i");
-  icon.classList.add("fa-solid", "fa-pen-to-square");
-  editBtn.appendChild(icon);
-
-  editBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    const newEditBtn = prompt("Edita la tarea:", p.textContent);
-    if (newEditBtn !== null && newEditBtn.trim() !== "") {
-      p.textContent = newEditBtn.trim();
-    }
-  });
-
-  editBtn.appendChild(icon);
-  return editBtn;
-}
-
-function viewBtn() {
-  const viewBtn = document.createElement("button");
-  viewBtn.classList.add("btn-edit");
-  const icon = document.createElement("i");
-  icon.classList.add("fa-solid", "fa-eye");
-
-  viewBtn.appendChild(icon);
-
-  viewBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    const newEditBtn = prompt("Edita la tarea:", p.textContent);
-    if (newEditBtn !== null && newEditBtn.trim() !== "") {
-      p.textContent = newEditBtn.trim();
-    }
-  });
-
-  viewBtn.appendChild(icon);
-  return viewBtn;
 }
