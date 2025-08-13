@@ -95,7 +95,7 @@ li {
 }
 
 .btn-delete {
-  background-color:  #3498db;
+  background-color: #3498db;
   color: white;
   border: none;
   padding: 5px 8px;
@@ -104,7 +104,7 @@ li {
   margin-left: 5px;
 }
 
-.btn-edit:hover {
+.btn-delete:hover {
   background-color: #2980b9;
 }
 
@@ -121,3 +121,29 @@ li {
 .btn-edit:hover {
   background-color: #2980b9;
 }
+
+.btn-view {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 5px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 5px;
+}
+.btn-view:hover {
+  background-color: #2980b9;
+}
+
+
+.taskForm {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* espacio entre cada input y botón */
+}
+.taskForm input,
+.taskForm button {
+  padding: 8px;
+  font-size: 16px;
+}
+
