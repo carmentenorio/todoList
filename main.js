@@ -1,23 +1,29 @@
 const inputTask = document.querySelector("#taskInput");
 const inputDesc = document.querySelector("#descriptionInput");
+const inputCompleted = document.querySelector("#completedInput");
 const addBtn = document.querySelector(".btn-add");
-const ul = document.querySelector("ul");
+const listTasks = document.querySelector("ul");
 const empty = document.querySelector(".empty");
+const modal = document.querySelector("#exampleModal");
 
-let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+let tasks;
 /**
  * load tasks on page startup
  */
 render();
+
 addBtn.addEventListener("click", (e) => {
-  e.preventDefault();
   const taskText = inputTask.value.trim();
   const description = inputDesc.value.trim();
   if (taskText !== "" && description !== "") {
-    addTaskToList(taskText, description);
+    const isCompleted = inputCompleted.checked; 
+    addTaskToList(taskText, description, isCompleted);
     inputTask.value = "";
     inputDesc.value = "";
+    inputCompleted.checked = false;
     empty.style.display = "none";
+  } else {
+    alert("You must enter a task and a description");
   }
 });
 /**
@@ -25,28 +31,29 @@ addBtn.addEventListener("click", (e) => {
  * @returns
  */
 function render() {
+  tasks = JSON.parse(localStorage.getItem("tasks")) || [];
   if (tasks.length === 0) {
-    ul.innerHTML = "";
+    listTasks.innerHTML = "";
     empty.style.display = "block";
     return;
   }
   empty.style.display = "none";
 
-  ul.innerHTML = tasks
+  listTasks.innerHTML = tasks
     .map((task, index) => {
       return `
       <li>
-       <input type="checkbox"
-       ${task.completed ? "checked" : ""}
-        onchange="toggleTask(${index})">
-        <p>${task.text} - ${task.description} </p>
+         <input type="checkbox" ${task.completed ? "checked" : ""} 
+               onchange="toggleTask(${index})">
+        <p>${task.text} - ${task.description}
+        ${task.completed ? "(Completada)" : "(Pendiente)"}</p>
         <button class="btn-view" onclick="viewTaskByIndex(${index})">
           <i class="fa-solid fa-eye" style="cursor:pointer; color:green;"></i>
         </button>
         <button class="btn-edit" onclick="editTaskByIndex(${index})">
           <i class="fa-solid fa-pen-to-square" style="cursor:pointer; color:blue;"></i>
         </button>
-         <button class="btn-delete" onclick="deleteTaskByIndex(${index})">
+        <button class="btn-delete" onclick="deleteTaskByIndex(${index})">
           <i class="fa-solid fa-trash" style="cursor:pointer; color:red;"></i>
         </button>
       </li>
@@ -60,23 +67,14 @@ function toggleTask(index) {
   render();
 }
 /**
- * function that does not delete by index in the map
- * @param {*} taskText
- */
-function deleteTask(taskText) {
-  tasks = tasks.filter((task) => task !== taskText);
-  saveTasksToStorage();
-  render();
-}
-/**
  * add task to DOM and array
  * @param {*} taskText, description
  */
-function addTaskToList(taskText, description) {
+function addTaskToList(taskText, description, isCompleted) {
   tasks.push({
     text: taskText,
     description: description,
-    completed: false,
+    completed: isCompleted,
   });
   saveTasksToStorage();
   render();
@@ -91,14 +89,6 @@ function deleteTaskByIndex(i) {
   render();
 }
 /**
- * Delete array and DOM task
- * @param {*} taskText
- * @param {*} liElement
- */
-function removeTaskFromList(taskText, liElement) {
-  deleteTask(taskText);
-}
-/**
  * save in localStorage
  */
 function saveTasksToStorage() {
@@ -111,7 +101,11 @@ function saveTasksToStorage() {
 function viewTaskByIndex(index) {
   const task = tasks[index];
   if (task) {
-    alert("Task: " + task.text + "\nDescription: " + task.description);
+    document.getElementById("modalTaskText").textContent = task.text;
+    document.getElementById("modalTaskDescription").textContent =
+      task.description;
+    const modal = new bootstrap.Modal(document.getElementById("exampleModal"));
+    modal.show();
   }
 }
 /**
@@ -119,30 +113,9 @@ function viewTaskByIndex(index) {
  * @param {*} id
  */
 function editTaskByIndex(index) {
-  const newText = prompt("Edit task:", tasks[index].text);
-  const newDesc = prompt("Edit description:", tasks[index].description);
-  if (newText && newText.trim() !== "") {
-    tasks[index].text = newText.trim();
-  }
-  if (newDesc && newDesc.trim() !== "") {
-    tasks[index].description = newDesc.trim();
-  }
+  const task = tasks[index];
+  document.getElementById("taskInput").value = task.text;
+  document.getElementById("descriptionInput").value = task.description;
+  deleteTaskByIndex(index);
   saveTasksToStorage();
-  render();
-}
-/**
- * function that is no longer used since render contains it
- * @param {*} taskText
- */
-function renderTask(taskText) {
-  const li = document.createElement("li");
-  const p = document.createElement("p");
-  //ul.innerHTML = `<li><p>${taskText}</p> <button onclick=deleteTask(${taskText})></button></li>`;
-  //ul.innerHTML = `<li><p>${taskText}</p> <button onclick="deleteTask('${taskText}')"></button></li>`;
-  p.textContent = taskText;
-  // Crear el botón eliminar usando tu función y pasándole la tarea
-  const deleteBtn = addDeleteBtn(taskText);
-  li.appendChild(p);
-  li.appendChild(deleteBtn);
-  ul.appendChild(li);
 }
