@@ -1,8 +1,3 @@
-
-
-
-
-
 const inputTask = document.querySelector("#taskInput");
 const inputDesc = document.querySelector("#descriptionInput");
 const inputCompleted = document.querySelector("#completedInput");
@@ -32,7 +27,6 @@ let categoryOptions = [
     id: 4,
   },
 ];
-//console.log(categoriesOptions);
 let tagsOptions = [
   {
     id: 1, name: "tag1"
@@ -53,34 +47,18 @@ let tagsOptions = [
     id: 6, name: "tag6"
   },
 ];
-// Renderizar categorías
 function renderCategories() {
   let html = "";
-  html +=
-    // selectCategory.innerHTML =
-    "<option value=0 disabled>Selecciona una categoría</option>";
+  html +="<option value=0 disabled>Selecciona una categoría</option>";
   categoryOptions.forEach((category, index) => {
     html += `<option value=${category.id} >${category.name}</option>`;
-    // const option = document.createElement("option");
-    // if(index === 0){
-    //   console.log("here", option)
-    //   option.selected = true;
-    // }
-    // option.value = category.id;
-    // option.textContent = category.name;
-    // selectCategory.appendChild(option);
   });
   console.log("htmlhtml", html);
   selectCategory.innerHTML = html;
 }
-// Renderizar tags
 function renderTags() {
   selectTag.innerHTML = "<option disabled>Selecciona uno o más tags</option>";
   tagsOptions.forEach((tag, index) => {
-    //const option = document.createElement("option");
-    //option.value = index;
-    //option.textContent = tag;
-    //selectTag.appendChild(option);
     let html = "<option disabled>Selecciona uno o más tags</option>";
     tagsOptions.forEach((tag) => {
       html += `<option value=${tag.id}>${tag.name}</option>`;
@@ -92,7 +70,6 @@ function renderTags() {
 addBtn.addEventListener("click", (e) => {
   e.preventDefault();
   const taskText = inputTask.value.trim();
-  //console.log(taskText);
   const description = inputDesc.value.trim();
   const completed = inputCompleted.checked;
   const categoryId = selectCategory.value;
@@ -100,7 +77,6 @@ addBtn.addEventListener("click", (e) => {
     selectCategory.options[selectCategory.selectedIndex]?.text;
   console.log("ID:", categoryId);
   console.log("Nombre:", categoryName);
-  //obtener tags seleccionados
   const tags = [];
   for (let i = 0; i < selectTag.options.length; i++) {
     if (selectTag.options[i].selected) {
@@ -110,9 +86,7 @@ addBtn.addEventListener("click", (e) => {
       });
     }
   }
-  //console.log("here is my message", tags);
 
-  //console.log(selectTag);
   if (taskText === "" || description === "") {
     alert("You must enter a task and a description");
   } else {
@@ -124,15 +98,12 @@ addBtn.addEventListener("click", (e) => {
       categoryName,
       tags
     );
-    //limpiar campos
     inputTask.value = "";
     inputDesc.value = "";
     inputCompleted.checked = false;
     selectCategory.selectedIndex = 1;
-    //desmarcar la opcion de tags 
     for (let i = 0; i < selectTag.options.length; i++) {
       selectTag.options[i].selected = false;
-      //console.log(selectTag);
     }
     empty.style.display = "none";
   }
@@ -153,20 +124,13 @@ function render() {
 
   listTasks.innerHTML = tasks
     .map((task, index) => {
-      /*const categorys = task.categoryId
-        ? `<small>Category: ${task.categoryId}</small>`
-        : "";
-      const tags =
-        task.tags && task.tags.length
-          ? `<small>^Tags: ${task.tags.join(", ")}</small>`
-          : "";*/
       return `
       <li>
-         <input type="checkbox" ${task.completed ? "checked" : ""} 
+        <input type="checkbox" ${task.completed ? "checked" : ""} 
                onchange="toggleTask(${index})">
-        <p>${task.text} - ${task.description}
-        ${task.completed ? "(Completada)" : "(Pendiente)"}</p>
-  
+        <p style="text-decoration: ${task.completed ? "line-through" : "none"};">
+          ${task.text} - ${task.description} 
+          ${task.completed ? "(Completada)" : "(Pendiente)"}</p>
         <p><strong>Categoría:</strong> ${task.categoryName}</p>
         <p><strong>Tags:</strong> ${task.tags.map((t) => t.name).join(", ")}</p>
 
@@ -206,9 +170,9 @@ function addTaskToList(
     text: taskText,
     description: description,
     completed: isCompleted,
-    categoryId: categoryId, //string
+    categoryId: categoryId,
     categoryName: categoryName,
-    tags: tags, //array
+    tags: tags, 
   });
   saveTasksToStorage();
   render();
