@@ -1,3 +1,8 @@
+
+
+
+
+
 const inputTask = document.querySelector("#taskInput");
 const inputDesc = document.querySelector("#descriptionInput");
 const inputCompleted = document.querySelector("#completedInput");
@@ -28,8 +33,26 @@ let categoryOptions = [
   },
 ];
 //console.log(categoriesOptions);
-let tagsOptions = ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6"];
-
+let tagsOptions = [
+  {
+    id: 1, name: "tag1"
+  },
+  {
+    id: 2, name: "tag2"
+  },
+  {
+    id: 3, name: "tag3"
+  },
+  {
+    id: 4, name: "tag4"
+  },
+  {
+    id: 5, name: "tag5"
+  },
+  {
+    id: 6, name: "tag6"
+  },
+];
 // Renderizar categorías
 function renderCategories() {
   let html = "";
@@ -54,10 +77,15 @@ function renderCategories() {
 function renderTags() {
   selectTag.innerHTML = "<option disabled>Selecciona uno o más tags</option>";
   tagsOptions.forEach((tag, index) => {
-    const option = document.createElement("option");
-    option.value = index;
-    option.textContent = tag;
-    selectTag.appendChild(option);
+    //const option = document.createElement("option");
+    //option.value = index;
+    //option.textContent = tag;
+    //selectTag.appendChild(option);
+    let html = "<option disabled>Selecciona uno o más tags</option>";
+    tagsOptions.forEach((tag) => {
+      html += `<option value=${tag.id}>${tag.name}</option>`;
+    });
+    selectTag.innerHTML = html;
   });
 }
 
@@ -69,20 +97,11 @@ addBtn.addEventListener("click", (e) => {
   const completed = inputCompleted.checked;
   const categoryId = selectCategory.value;
   const categoryName =
-    selectCategory.options[selectCategory.selectedIndex].text;
+    selectCategory.options[selectCategory.selectedIndex]?.text;
   console.log("ID:", categoryId);
   console.log("Nombre:", categoryName);
-
-  selectCategory.options[selectCategory.selectedIndex].text;
-  console.log();
-  
-  //console.log("name of category: ", categoryName);
-  //obtner categoryes
-  //const categorys = selectCategory.value;
-  //console.log("here is my message", categorys);
-  //obtener tags
+  //obtener tags seleccionados
   const tags = [];
-
   for (let i = 0; i < selectTag.options.length; i++) {
     if (selectTag.options[i].selected) {
       tags.push({
@@ -105,12 +124,12 @@ addBtn.addEventListener("click", (e) => {
       categoryName,
       tags
     );
+    //limpiar campos
     inputTask.value = "";
     inputDesc.value = "";
     inputCompleted.checked = false;
     selectCategory.selectedIndex = 1;
-    //console(selectCategory);
-    //desmarcar la opcion de tags multipl
+    //desmarcar la opcion de tags 
     for (let i = 0; i < selectTag.options.length; i++) {
       selectTag.options[i].selected = false;
       //console.log(selectTag);
@@ -118,14 +137,6 @@ addBtn.addEventListener("click", (e) => {
     empty.style.display = "none";
   }
 });
-
-// const completed = inputCompleted.checked;
-// document.getElementById("completedInput").checked = tasks.completed;
-// for (let i = 0; i < selectTag.options.length; i++) {
-//   //console.log(selectTag.options[i].value);
-// }
-// selectCategory.selectedIndex = 0;
-
 /**
  * function to render and display dynamically
  * @returns
@@ -142,13 +153,13 @@ function render() {
 
   listTasks.innerHTML = tasks
     .map((task, index) => {
-      const categorys = task.categoryId
+      /*const categorys = task.categoryId
         ? `<small>Category: ${task.categoryId}</small>`
         : "";
       const tags =
         task.tags && task.tags.length
           ? `<small>^Tags: ${task.tags.join(", ")}</small>`
-          : "";
+          : "";*/
       return `
       <li>
          <input type="checkbox" ${task.completed ? "checked" : ""} 
@@ -240,15 +251,15 @@ function editTaskByIndex(index) {
   document.getElementById("taskInput").value = task.text;
   document.getElementById("descriptionInput").value = task.description;
   document.getElementById("completedInput").checked = task.completed;
-  document.getElementById("category").value = task.categoryName;
-
+  const selectCategory = document.querySelector("#category");
+  if (task.categoryId) {
+    selectCategory.value = task.categoryId;
+  }
   for (let i = 0; i < selectTag.options.length; i++) {
     selectTag.options[i].selected = task.tags.some(
       (t) => t.id == selectTag.options[i].value
     );
   }
-  //console.log(selectTag);
-
   deleteTaskByIndex(index);
   saveTasksToStorage();
 }
@@ -256,3 +267,10 @@ function editTaskByIndex(index) {
 render();
 renderCategories();
 renderTags();
+
+
+
+
+
+
+
