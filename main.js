@@ -1,99 +1,240 @@
-const input = document.querySelector("input");
-const addBtn = document.querySelector(".btn-add"); //añadir una tarea
-const ul = document.querySelector("ul"); //lista donde se va a gregar todos los elementos
-const empty = document.querySelector(".empty"); //mensaje de lista vacia
+const inputTask = document.querySelector("#taskInput");
+const inputDesc = document.querySelector("#descriptionInput");
+const inputCompleted = document.querySelector("#completedInput");
+const addBtn = document.querySelector(".btn-add");
+const listTasks = document.querySelector("ul");
+const empty = document.querySelector(".empty");
+const modal = document.querySelector("#exampleModal");
+const selectCategory = document.querySelector("#category");
+const selectTag = document.querySelector("#tags");
+
+let tasks;
+let categoryOptions = [
+  {
+    name: "category1",
+    id: 1,
+  },
+  {
+    name: "category2",
+    id: 2,
+  },
+  {
+    name: "category3",
+    id: 3,
+  },
+  {
+    name: "category4",
+    id: 4,
+  },
+];
+let tagsOptions = [
+  {
+    id: 1, name: "tag1"
+  },
+  {
+    id: 2, name: "tag2"
+  },
+  {
+    id: 3, name: "tag3"
+  },
+  {
+    id: 4, name: "tag4"
+  },
+  {
+    id: 5, name: "tag5"
+  },
+  {
+    id: 6, name: "tag6"
+  },
+];
+function renderCategories() {
+  let html = "";
+  html +="<option value=0 disabled>Selecciona una categoría</option>";
+  categoryOptions.forEach((category, index) => {
+    html += `<option value=${category.id} >${category.name}</option>`;
+  });
+  console.log("htmlhtml", html);
+  selectCategory.innerHTML = html;
+}
+function renderTags() {
+  selectTag.innerHTML = "<option disabled>Selecciona uno o más tags</option>";
+  tagsOptions.forEach((tag, index) => {
+    let html = "<option disabled>Selecciona uno o más tags</option>";
+    tagsOptions.forEach((tag) => {
+      html += `<option value=${tag.id}>${tag.name}</option>`;
+    });
+    selectTag.innerHTML = html;
+  });
+}
 
 addBtn.addEventListener("click", (e) => {
   e.preventDefault();
-  //console.log(1);
+  const taskText = inputTask.value.trim();
+  const description = inputDesc.value.trim();
+  const completed = inputCompleted.checked;
+  const categoryId = selectCategory.value;
+  const categoryName =
+    selectCategory.options[selectCategory.selectedIndex]?.text;
+  console.log("ID:", categoryId);
+  console.log("Nombre:", categoryName);
+  const tags = [];
+  for (let i = 0; i < selectTag.options.length; i++) {
+    if (selectTag.options[i].selected) {
+      tags.push({
+        id: selectTag.options[i].value,
+        name: selectTag.options[i].text,
+      });
+    }
+  }
 
-  const taskText = input.value;
-
-  if (taskText !== "") {
-    addTask(taskText);
-
-    input.value = "";
-    empty.style.display = "none"; //ocultar mensaje de lista vacia
+  if (taskText === "" || description === "") {
+    alert("You must enter a task and a description");
+  } else {
+    addTaskToList(
+      taskText,
+      description,
+      completed,
+      categoryId,
+      categoryName,
+      tags
+    );
+    inputTask.value = "";
+    inputDesc.value = "";
+    inputCompleted.checked = false;
+    selectCategory.selectedIndex = 1;
+    for (let i = 0; i < selectTag.options.length; i++) {
+      selectTag.options[i].selected = false;
+    }
+    empty.style.display = "none";
   }
 });
+/**
+ * function to render and display dynamically
+ * @returns
+ */
+function render() {
+  tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  console.log(tasks);
 
-function addTask(taskText) {
-  const li = document.createElement("li");
-  const p = document.createElement("p");
-  p.textContent = taskText;
+  if (tasks.length === 0) {
+    listTasks.innerHTML = "";
+    empty.style.display = "block";
+    return;
+  }
 
-  li.appendChild(p);
-  li.appendChild(addDeleteBtn());
-  li.appendChild(editBtn());
-  li.appendChild(viewBtn());
-  ul.appendChild(li);
+  listTasks.innerHTML = tasks
+    .map((task, index) => {
+      return `
+      <li>
+        <input type="checkbox" ${task.completed ? "checked" : ""} 
+               onchange="toggleTask(${index})">
+        <p style="text-decoration: ${task.completed ? "line-through" : "none"};">
+          ${task.text} - ${task.description} 
+          ${task.completed ? "(Completada)" : "(Pendiente)"}</p>
+        <p><strong>Categoría:</strong> ${task.categoryName}</p>
+        <p><strong>Tags:</strong> ${task.tags.map((t) => t.name).join(", ")}</p>
+
+        <button class="btn-view" onclick="viewTaskByIndex(${index})">
+          <i class="fa-solid fa-eye" style="cursor:pointer; color:green;"></i>
+        </button>
+        <button class="btn-edit" onclick="editTaskByIndex(${index})">
+          <i class="fa-solid fa-pen-to-square" style="cursor:pointer; color:blue;"></i>
+        </button>
+        <button class="btn-delete" onclick="deleteTaskByIndex(${index})">
+          <i class="fa-solid fa-trash" style="cursor:pointer; color:red;"></i>
+        </button>
+      </li>
+    `;
+    })
+    .join("");
 }
 
-function addDeleteBtn() {
-  const deleteBtn = document.createElement("button");
-  deleteBtn.classList.add("btn-delete");
-  //crear icono
-  const icon = document.createElement("i");
-  icon.classList.add("fa-solid", "fa-trash"); //clase del icon
-  icon.style.cursor = "pointer";
-  icon.style.color = "red";
-  //Insertar ícono dentro del botón
-  deleteBtn.appendChild(icon);
-  /*
-  deleteBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    //para encontrar el li mas cercano al icono
-    const li = e.target.closest("li"); // Busca el <li> más cercano
-    ul.removeChild(li);
-    const items = document.querySelectorAll("li");
-    if (items.length === 0) {
-      empty.style.display = "block"; //mostrar mensaje de lista vacia
-    }
+function toggleTask(index) {
+  tasks[index].completed = !tasks[index].completed;
+  saveTasksToStorage();
+  render();
+}
+/**
+ * add task to DOM and array
+ * @param {*} taskText, description
+ */
+function addTaskToList(
+  taskText,
+  description,
+  isCompleted,
+  categoryId,
+  categoryName,
+  tags
+) {
+  tasks.push({
+    text: taskText,
+    description: description,
+    completed: isCompleted,
+    categoryId: categoryId,
+    categoryName: categoryName,
+    tags: tags, 
   });
-  deleteBtn.appendChild(icon);*/
-  return deleteBtn;
+  saveTasksToStorage();
+  render();
+}
+/**
+ * function that doses not delete by index
+ * @param {*} i
+ */
+function deleteTaskByIndex(i) {
+  tasks.splice(i, 1);
+  saveTasksToStorage();
+  render();
+}
+/**
+ * save in localStorage
+ */
+function saveTasksToStorage() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+/**
+ * view task (only shows text in alert)
+ * @param {*} id
+ */
+function viewTaskByIndex(index) {
+  const task = tasks[index];
+  if (task) {
+    document.getElementById("modalTaskText").textContent = task.text;
+    document.getElementById("modalTaskDescription").textContent =
+      task.description;
+    const modal = new bootstrap.Modal(document.getElementById("exampleModal"));
+    modal.show();
+  }
+}
+/**
+ * edit task by id
+ * @param {*} id
+ */
+function editTaskByIndex(index) {
+  const task = tasks[index];
+  document.getElementById("taskInput").value = task.text;
+  document.getElementById("descriptionInput").value = task.description;
+  document.getElementById("completedInput").checked = task.completed;
+  const selectCategory = document.querySelector("#category");
+  if (task.categoryId) {
+    selectCategory.value = task.categoryId;
+  }
+  for (let i = 0; i < selectTag.options.length; i++) {
+    selectTag.options[i].selected = task.tags.some(
+      (t) => t.id == selectTag.options[i].value
+    );
+  }
+  deleteTaskByIndex(index);
+  saveTasksToStorage();
 }
 
-function editBtn() {
-  const editBtn = document.createElement("button");
-  editBtn.classList.add("btn-edit");
-  //crear icono editar
-  const icon = document.createElement("i");
-  icon.classList.add("fa-solid", "fa-pen-to-square"); //clase del icon
+render();
+renderCategories();
+renderTags();
 
-  //Insertar ícono dentro del botón
-  editBtn.appendChild(icon);
-/*
-  editBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    const newEditBtn = prompt("Edita la tarea:", p.textContent);
-    if (newEditBtn !== null && newEditBtn.trim() !== "") {
-      p.textContent = newEditBtn.trim();
-    }
-  });
 
-  editBtn.appendChild(icon);*/
-  return editBtn;
-}
 
-function viewBtn() {
-  const viewBtn = document.createElement("button");
-  viewBtn.classList.add("btn-edit");
-  //crear icono ver
-  const icon = document.createElement("i");
-  icon.classList.add("fa-solid", "fa-eye"); //clase del icon
 
-  //Insertar ícono dentro del botón
-  viewBtn.appendChild(icon);
-/*
-  editBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    const newEditBtn = prompt("Edita la tarea:", p.textContent);
-    if (newEditBtn !== null && newEditBtn.trim() !== "") {
-      p.textContent = newEditBtn.trim();
-    }
-  });
 
-  editBtn.appendChild(icon);*/
-  return viewBtn;
-}
+
+
